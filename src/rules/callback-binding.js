@@ -20,7 +20,7 @@ module.exports = {
 
     create(context) {
         const {getLodashMethodVisitors} = require('../util/lodashUtil')
-        const {getFunctionMaxArity} = require('../util/methodDataUtil')
+        const {getFunctionMaxArity, getIterateeArrayType} = require('../util/methodDataUtil')
         const {getMethodName} = require('../util/astUtil')
         const {version} = require('../util/settingsUtil').getSettings(context)
 
@@ -29,8 +29,8 @@ module.exports = {
         }
 
         const callExpressionReporters = {
-            3(node, iteratee) {
-                if (isBound(iteratee)) {
+            3(node, iteratee, {method}) {
+                if (!getIterateeArrayType(3, method) && isBound(iteratee)) {
                     context.report({node: iteratee.callee.property, message: 'Unnecessary bind, pass `thisArg` to lodash method instead'})
                 }
             },

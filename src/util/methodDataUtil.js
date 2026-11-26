@@ -58,7 +58,8 @@ function isCollectionMethod(version, method) {
 
 
 /**
- * Returns whether the node's method call supports using shorthands in the specified version
+ * Returns whether the node's method call supports using shorthands in the specified version.
+ * In method data, `shorthand` may be a boolean or an object disabling specific shorthand types (e.g. `{matchesProp: false}`).
  * @param {Number} version
  * @param {string} method
  * @param [shorthandType]
@@ -67,7 +68,10 @@ function isCollectionMethod(version, method) {
 function methodSupportsShorthand(version, method, shorthandType) {
     const mainAlias = getMainAlias(version, method)
     const methodShorthandData = _.get(getMethodData(version), [mainAlias, 'shorthand'])
-    return _.isObject(methodShorthandData) ? Boolean(shorthandType && methodShorthandData[shorthandType]) : Boolean(methodShorthandData)
+    if (_.isObject(methodShorthandData)) {
+        return shorthandType ? methodShorthandData[shorthandType] !== false : true
+    }
+    return Boolean(methodShorthandData)
 }
 
 /**
@@ -121,6 +125,17 @@ function getIterateeIndex(version, method) {
 }
 
 /**
+ * Gets whether the method's iteratee argument accepts an array (or rest arguments) of iteratees.
+ * @param {number} version
+ * @param {string} method
+ * @returns {boolean|string}
+ */
+function getIterateeArrayType(version, method) {
+    const mainAlias = getMainAlias(version, method)
+    return _.get(getMethodData(version), [mainAlias, 'iterateeArray'], false)
+}
+
+/**
  * Gets the maximum number of arguments to be given to the function in the specified version
  * @param {number} version
  * @param {string} name
@@ -160,6 +175,7 @@ module.exports = {
     isMainAlias,
     getMainAlias,
     getIterateeIndex,
+    getIterateeArrayType,
     getFunctionMaxArity,
     getSideEffectIterationMethods,
     methodExists

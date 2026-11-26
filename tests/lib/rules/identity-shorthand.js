@@ -42,7 +42,25 @@ ruleTester.run('identity-shorthand', rule, {
         }, {
             code: 'var x = _.uniq(a, x => x)',
             options: ['never']
-        }
+        }, {
+            code: 'var x = _.overEvery([f, g])',
+            options: ['never']
+        }, {
+            code: 'var x = _.overSome([f, g])',
+            options: ['never']
+        }, {
+            code: 'var x = _.over([f, g])',
+            options: ['never']
+        }, {
+            code: 'var x = _.overEvery()',
+            options: ['never']
+        },
+        'var x = _.overEvery([x => x])',
+        'var x = _.sortBy(arr, [x => x, "a"])',
+        'var x = _.sortBy(arr, x => x, "a")',
+        'var x = _.sortBy(arr, ...rest, x => x)',
+        'var x = _.orderBy(arr, [x => x, "a"], ["asc", "desc"])',
+        'var x = _.orderBy(arr, x => x, "desc")'
     ].map(withDefaultPragma),
     invalid: [{
         code: 'var ids = _.map([], function (i) { return i; });',
@@ -61,6 +79,20 @@ ruleTester.run('identity-shorthand', rule, {
         errors: [{message: messages.always, column: 21}]
     }, {
         code: 'var ids = _.map(arr);',
+        options: ['never'],
+        errors: [{message: messages.never, column: 13}]
+    }, {
+        code: 'var ids = _.sortBy(arr, x => x);',
+        errors: [{message: messages.always, column: 25}]
+    }, {
+        code: 'var ids = _.orderBy(arr, x => x);',
+        errors: [{message: messages.always, column: 26}]
+    }, {
+        code: 'var ids = _.sortBy(arr);',
+        options: ['never'],
+        errors: [{message: messages.never, column: 13}]
+    }, {
+        code: 'var ids = _.orderBy(arr);',
         options: ['never'],
         errors: [{message: messages.never, column: 13}]
     }, {

@@ -64,6 +64,31 @@ function isNativeCollectionMethodCall(node) {
     return _.includes(['every', 'fill', 'filter', 'find', 'findIndex', 'forEach', 'includes', 'map', 'reduce', 'reduceRight', 'some'], astUtil.getMethodName(node))
 }
 
+function getRawIterateeArgs(node, {method, version, callType}) {
+    const iterateeIndex = methodDataUtil.getIterateeIndex(version, method)
+    if (iterateeIndex === -1) {
+        return []
+    }
+    if (methodDataUtil.getIterateeArrayType(version, method) === 'rest') {
+        return node.arguments.slice(Math.max(iterateeIndex - (callType === 'chained' ? 1 : 0), 0))
+    }
+    const index = callType === 'chained' ? iterateeIndex - 1 : iterateeIndex
+    return index >= 0 && node.arguments[index] ? [node.arguments[index]] : []
+}
+
+/**
+ * Returns all iteratee AST nodes for a lodash call, unwrapping array/rest iteratees where supported.
+ * @param {Object} node
+ * @param {Object} info
+ * @returns {Object[]}
+ */
+function getIterateeNodes(node, info) {
+    const unwrapArray = Boolean(methodDataUtil.getIterateeArrayType(info.version, info.method))
+    return _.flatMap(getRawIterateeArgs(node, info), arg =>
+        unwrapArray && arg.type === 'ArrayExpression' ? arg.elements : [arg]
+    ).filter(el => el && el.type !== 'SpreadElement')
+}
+
 /**
  * Gets the context's Lodash settings and a function and returns a visitor that calls the function for every Lodash or chain call
  * @param {LodashContext} lodashContext
@@ -71,28 +96,26 @@ function isNativeCollectionMethodCall(node) {
  * @returns {NodeTypeVisitor}
  */
 function getLodashMethodCallExpVisitor(lodashContext, reporter) {
+    const {version} = lodashContext
+    const reportCall = (node, method, callType) => {
+        const info = {callType, method, version, lodashContext}
+        reporter(node, getRawIterateeArgs(node, info)[0], info)
+    }
     return function (node) {
-        const {version} = lodashContext
-        let iterateeIndex
         if (lodashContext.isLodashChainStart(node)) {
             let prevNode = node
             node = node.parent.parent
             while (astUtil.getCaller(node) === prevNode && astUtil.isMethodCall(node) && !isChainBreaker(node, version)) {
-                const method = astUtil.getMethodName(node)
-                iterateeIndex = methodDataUtil.getIterateeIndex(version, method)
-                reporter(node, node.arguments[iterateeIndex - 1], {callType: 'chained', method, version, lodashContext})
+                reportCall(node, astUtil.getMethodName(node), 'chained')
                 prevNode = node
                 node = node.parent.parent
             }
         } else if (lodashContext.isLodashCall(node)) {
-            const method = astUtil.getMethodName(node)
-            iterateeIndex = methodDataUtil.getIterateeIndex(version, method)
-            reporter(node, node.arguments[iterateeIndex], {callType: 'method', method, version, lodashContext})
+            reportCall(node, astUtil.getMethodName(node), 'method')
         } else if (version !== 3) {
             const method = lodashContext.getImportedLodashMethod(node)
             if (method) {
-                iterateeIndex = methodDataUtil.getIterateeIndex(version, method)
-                reporter(node, node.arguments[iterateeIndex], {method, callType: 'single', version, lodashContext})
+                reportCall(node, method, 'single')
             }
         }
     }
@@ -125,21 +148,27 @@ function getLodashMethodVisitors(context, lodashCallExpVisitor) {
  * @returns {{ImportDeclaration({source: *, specifiers: *}): void, VariableDeclarator({init: *, id: *}): void}}
  */
 function getShorthandVisitors(context, checks, messages, shorthandType) {
-    const lodashContext = new LodashContext(context)
-    const visitors = lodashContext.getImportVisitors()
-    visitors.CallExpression = getLodashMethodCallExpVisitor(lodashContext, {
-        always(node, iteratee, {method, version}) {
-            if (methodDataUtil.methodSupportsShorthand(version, method, shorthandType) && checks.canUseShorthand(iteratee, lodashContext)) {
-                context.report({node: iteratee, message: messages.always})
-            }
-        },
-        never(node, iteratee, {method}) {
-            if (checks.usesShorthand(node, iteratee, method)) {
-                context.report({node: iteratee || node.callee.property, message: messages.never})
-            }
+    const isAlways = (context.options[0] || 'always') === 'always'
+    return getLodashMethodVisitors(context, (node, iteratee, info) => {
+        const {method, version, lodashContext} = info
+        if (!methodDataUtil.methodSupportsShorthand(version, method, shorthandType)) {
+            return
         }
-    }[context.options[0] || 'always'])
-    return visitors
+        if (!isAlways && !iteratee) {
+            if (checks.usesShorthand(node, undefined, method)) {
+                context.report({node: node.callee.property || node.callee, message: messages.never})
+            }
+            return
+        }
+        getIterateeNodes(node, info).forEach(it => {
+            const match = isAlways
+                ? checks.canUseShorthand(it, lodashContext, {node, iteratee, ...info})
+                : checks.usesShorthand(node, it, method)
+            if (match) {
+                context.report({node: it, message: isAlways ? messages.always : messages.never})
+            }
+        })
+    })
 }
 
 /**
@@ -159,6 +188,7 @@ module.exports = {
     getIsTypeMethod,
     isNativeCollectionMethodCall,
     getLodashMethodCallExpVisitor,
+    getIterateeNodes,
     isCallToLodashMethod,
     getShorthandVisitors,
     getLodashMethodVisitors,

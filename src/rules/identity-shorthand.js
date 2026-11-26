@@ -24,7 +24,6 @@ module.exports = {
         const get = require('lodash/get')
         const matches = require('lodash/matches')
         const overSome = require('lodash/overSome')
-        const {methodSupportsShorthand} = require('../util/methodDataUtil')
         const {getShorthandVisitors} = require('../util/lodashUtil')
         const {getFirstParamName, getValueReturnedInFirstStatement} = require('../util/astUtil')
         const settings = require('../util/settingsUtil').getSettings(context)
@@ -41,10 +40,14 @@ module.exports = {
             property: {name: 'identity'}
         })
 
-        const canUseShorthand = overSome(isExplicitIdentityFunction, isLodashIdentityFunction)
+        const isIdentityIteratee = overSome(isExplicitIdentityFunction, isLodashIdentityFunction)
 
-        function usesShorthand(node, iteratee, method) {
-            return methodSupportsShorthand(settings.version, method) && !iteratee
+        function canUseShorthand(iteratee, lodashContext, {node, iteratee: firstIteratee}) {
+            return iteratee === firstIteratee && iteratee === node.arguments[node.arguments.length - 1] && isIdentityIteratee(iteratee)
+        }
+
+        function usesShorthand(node, iteratee) {
+            return !iteratee
         }
 
         return getShorthandVisitors(context, {
@@ -53,6 +56,6 @@ module.exports = {
         }, {
             always: 'Prefer omitting the iteratee over a function that returns its argument',
             never: 'Do not use the identity shorthand syntax'
-        })
+        }, 'identity')
     }
 }

@@ -19,7 +19,7 @@ module.exports = {
     },
 
     create(context) {
-        const {getLodashMethodCallExpVisitor, getLodashContext} = require('../util/lodashUtil')
+        const {getLodashMethodCallExpVisitor, getLodashContext, getIterateeNodes} = require('../util/lodashUtil')
         const {isCollectionMethod} = require('../util/methodDataUtil')
         const {isFunctionExpression} = require('../util/astUtil')
         const assign = require('lodash/assign')
@@ -29,12 +29,17 @@ module.exports = {
         }
         const lodashContext = getLodashContext(context)
         return assign({
-            'CallExpression:exit': getLodashMethodCallExpVisitor(lodashContext, (node, iteratee, {method, version}) => {
-                if ((isCollectionMethod(version, method) || /^forEach(Right)?$/.test(method)) && funcInfos.has(iteratee)) {
-                    const {thisUses} = funcInfos.get(iteratee)
-                    if (isFunctionExpression(iteratee) && thisUses.length) {
-                        thisUses.forEach(thisNode => {context.report({node: thisNode, message: 'Do not use `this` without binding in collection methods'})})
-                    }
+            'CallExpression:exit': getLodashMethodCallExpVisitor(lodashContext, (node, iteratee, info) => {
+                const {method, version} = info
+                if ((isCollectionMethod(version, method) && !/^over/.test(method)) || /^forEach(Right)?$/.test(method)) {
+                    getIterateeNodes(node, info).forEach(iterateeNode => {
+                        if (funcInfos.has(iterateeNode)) {
+                            const {thisUses} = funcInfos.get(iterateeNode)
+                            if (isFunctionExpression(iterateeNode) && thisUses.length) {
+                                thisUses.forEach(thisNode => {context.report({node: thisNode, message: 'Do not use `this` without binding in collection methods'})})
+                            }
+                        }
+                    })
                 }
             }),
             ThisExpression(node) {

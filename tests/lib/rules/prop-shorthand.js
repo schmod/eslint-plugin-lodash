@@ -35,6 +35,15 @@ ruleTester.run('prop-shorthand', rule, {
         {
             code: 'const r = _.map([], x => x.id)',
             options: ['never']
+        },
+        {
+            code: '_.overSome([["a", 1]]);',
+            options: ['never']
+        },
+        {
+            code: '_.find(arr, "a", 1);',
+            options: ['never'],
+            settings: {lodash: {version: 3}}
         }
     ].map(withDefaultPragma),
     invalid: [{
@@ -62,6 +71,46 @@ ruleTester.run('prop-shorthand', rule, {
     }, {
         code: 'var ids = _.sortBy(arr, i => i.a);',
         errors: [{message: messages.always}]
+    }, {
+        code: 'var ids = _.sortBy(arr, [i => i.a, i => i.b]);',
+        errors: [{message: messages.always, column: 26}, {message: messages.always, column: 36}]
+    }, {
+        code: 'var ids = _.sortBy(arr, i => i.a, i => i.b);',
+        errors: [{message: messages.always, column: 25}, {message: messages.always, column: 35}]
+    }, {
+        code: 'var ids = _.sortBy(arr, ["a", "b"]);',
+        options: ['never'],
+        errors: [{message: messages.never, column: 26}, {message: messages.never, column: 31}]
+    }, {
+        code: 'var ids = _.sortBy(arr, "a", "b");',
+        options: ['never'],
+        errors: [{message: messages.never, column: 25}, {message: messages.never, column: 30}]
+    }, {
+        code: 'var ids = _.sortBy(arr, [["a", "b"]]);',
+        options: ['never'],
+        errors: [{message: messages.never, column: 26}]
+    }, {
+        code: 'var ids = _.orderBy(arr, [i => i.a, i => i.b], ["asc", "desc"]);',
+        errors: [{message: messages.always, column: 27}, {message: messages.always, column: 37}]
+    }, {
+        code: 'var ids = _.orderBy(arr, ["a", "b"], ["asc", "desc"]);',
+        options: ['never'],
+        errors: [{message: messages.never, column: 27}, {message: messages.never, column: 32}]
+    }, {
+        code: 'var ids = _.orderBy(arr, "a", "desc");',
+        options: ['never'],
+        errors: [{message: messages.never, column: 26}]
+    }, {
+        code: 'var ids = _.orderBy(arr, [["a", "b"]], ["asc"]);',
+        options: ['never'],
+        errors: [{message: messages.never, column: 27}]
+    }, {
+        code: 'var fn = _.overEvery([i => i.a, i => i.b]);',
+        errors: [{message: messages.always, column: 23}, {message: messages.always, column: 33}]
+    }, {
+        code: 'var fn = _.overEvery(["a", "b"]);',
+        options: ['never'],
+        errors: [{message: messages.never, column: 23}, {message: messages.never, column: 28}]
     }, {
         code: 'var ids = _.map(arr, "id");',
         options: ['never'],

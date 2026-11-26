@@ -19,7 +19,7 @@ module.exports = {
     },
 
     create(context) {
-        const {getLodashMethodCallExpVisitor, getLodashContext} = require('../util/lodashUtil')
+        const {getLodashMethodCallExpVisitor, getLodashContext, getIterateeNodes} = require('../util/lodashUtil')
         const {isCollectionMethod} = require('../util/methodDataUtil')
         const {isFunctionDefinitionWithBlock} = require('../util/astUtil')
         const assign = require('lodash/assign')
@@ -27,10 +27,14 @@ module.exports = {
         let currFuncInfo = {}
         const lodashContext = getLodashContext(context)
         return assign({
-            'CallExpression:exit': getLodashMethodCallExpVisitor(lodashContext, (node, iteratee, {method, version}) => {
-                if (isCollectionMethod(version, method) && funcInfos.has(iteratee)) {
-                    const {hasReturn} = funcInfos.get(iteratee)
-                    if (isFunctionDefinitionWithBlock(iteratee) && !hasReturn && !iteratee.async && !iteratee.generator) {
+            'CallExpression:exit': getLodashMethodCallExpVisitor(lodashContext, (node, iteratee, info) => {
+                const {method, version} = info
+                if (isCollectionMethod(version, method)) {
+                    const hasMissingReturn = getIterateeNodes(node, info).some(iterateeNode =>
+                        funcInfos.has(iterateeNode) && isFunctionDefinitionWithBlock(iterateeNode) &&
+                        !funcInfos.get(iterateeNode).hasReturn && !iterateeNode.async && !iterateeNode.generator
+                    )
+                    if (hasMissingReturn) {
                         context.report({node, message: `Do not use _.${method} without returning a value`})
                     }
                 }

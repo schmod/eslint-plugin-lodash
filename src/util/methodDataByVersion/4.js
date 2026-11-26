@@ -1411,38 +1411,47 @@ module.exports = {
     orderBy: {
         aliases: [],
         wrapper: false,
-        shorthand: false,
+        shorthand: {matchesProp: false},
         chainable: true,
-        iteratee: false,
+        iteratee: true,
+        iterateeArray: true,
         args: 3
     },
     over: {
         aliases: [],
         wrapper: false,
-        shorthand: false,
+        shorthand: {identity: false},
         chainable: true,
-        iteratee: false
+        iteratee: true,
+        iterateeIndex: 0,
+        iterateeArray: 'rest'
     },
     overArgs: {
         aliases: [],
         wrapper: false,
-        shorthand: false,
+        shorthand: {identity: false},
         chainable: true,
-        iteratee: false
+        iteratee: true,
+        iterateeIndex: 1,
+        iterateeArray: 'rest'
     },
     overEvery: {
         aliases: [],
         wrapper: false,
-        shorthand: true,
+        shorthand: {identity: false},
         chainable: true,
-        iteratee: true
+        iteratee: true,
+        iterateeIndex: 0,
+        iterateeArray: 'rest'
     },
     overSome: {
         aliases: [],
         wrapper: false,
-        shorthand: true,
+        shorthand: {identity: false},
         chainable: true,
-        iteratee: true
+        iteratee: true,
+        iterateeIndex: 0,
+        iterateeArray: 'rest'
     },
     pad: {
         aliases: [],
@@ -1795,11 +1804,10 @@ module.exports = {
     sortBy: {
         aliases: [],
         wrapper: false,
-        shorthand: {
-            prop: true
-        },
+        shorthand: {matchesProp: false},
         chainable: true,
-        iteratee: true
+        iteratee: true,
+        iterateeArray: 'rest'
     },
     sortedIndex: {
         aliases: [],

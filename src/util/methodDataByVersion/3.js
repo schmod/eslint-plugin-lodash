@@ -1309,16 +1309,18 @@ module.exports = {
     sortByAll: {
         aliases: [],
         wrapper: false,
-        shorthand: false,
+        shorthand: {matchesProp: false},
         chainable: true,
-        iteratee: false
+        iteratee: true,
+        iterateeArray: 'rest'
     },
     sortByOrder: {
         aliases: [],
         wrapper: false,
-        shorthand: true,
+        shorthand: {matchesProp: false},
         chainable: true,
-        iteratee: true
+        iteratee: true,
+        iterateeArray: true
     },
     sortedIndex: {
         aliases: [],

@@ -20,7 +20,9 @@ const testCases = {
             'var x = _.map(arr, f)',
             'var r = _.find(themeStyleList, function (themeStyle) { return this.x; }, this);',
             'var r = _.find(arr, function (i) { return this.x; }.bind(this, x));',
-            'var r = _.zipWith([1],[2],[3], f);'
+            'var r = _.zipWith([1],[2],[3], f);',
+            'var r = _.sortByOrder(arr, f.bind(this), [true]);',
+            'var r = _.sortByAll(arr, f.bind(this));'
         ].map(optionsUtil.fromVersion3WithDefaultPragma),
         v4Default: [
             'var x = _.map(arr, f.bind(this))',

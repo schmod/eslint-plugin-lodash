@@ -16,6 +16,8 @@ const {fromMessage, withDefaultPragma} = require('../testUtil/optionsUtil')
 ruleTester.run('collection-method-value', rule, {
     valid: [
         'x = _.map(arr, f)',
+        'x = _.sortBy(arr, ["a"])',
+        'x = _.orderBy(arr, ["a"], ["desc"])',
         '_.forEach(arr, g)',
         'if (_.some(arr, h)) {i()}',
         'x = _(arr).filter(p).map(q).value()',
@@ -40,5 +42,14 @@ ruleTester.run('collection-method-value', rule, {
             code: 'import f from "lodash/map"; f(x, g)',
             languageOptions: {sourceType: 'module'}
         }
-    ].map(withDefaultPragma).map(fromMessage('Use value returned from _.map')))
+    ].map(withDefaultPragma).map(fromMessage('Use value returned from _.map'))).concat([
+        {
+            code: '_.sortBy(arr, ["a"])',
+            errors: [{message: 'Use value returned from _.sortBy'}]
+        },
+        {
+            code: '_.orderBy(arr, ["a"], ["desc"])',
+            errors: [{message: 'Use value returned from _.orderBy'}]
+        }
+    ].map(withDefaultPragma))
 })

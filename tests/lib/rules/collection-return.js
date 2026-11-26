@@ -24,7 +24,9 @@ ruleTester.run('collection-return', rule, {
         'y = _.reject(x, p => p); _.forEach(t, s => {}).value();',
         '_.map(a, x => f(x).then(() => {g()}))',
         {code: '_.map(x, async t => {})', languageOptions: {parserOptions: {ecmaVersion: 8}}},
-        {code: '_.map(x, function*(t) {})', languageOptions: {parserOptions: {ecmaVersion: 6}}}
+        {code: '_.map(x, function*(t) {})', languageOptions: {parserOptions: {ecmaVersion: 6}}},
+        '_.sortBy(arr, [function(a) { return a.x }])',
+        '_.orderBy(arr, [function(a) { return a.x }], ["asc"])'
     ].map(withDefaultPragma),
     invalid: [{
         code: '_.map(arr, function(a) {console.log(a)})',
@@ -42,6 +44,21 @@ ruleTester.run('collection-return', rule, {
     }, {
         code: '_.map(arr, function x(a) {arr2.push(a)})',
         errors: [{message: 'Do not use _.map without returning a value'}]
+    }, {
+        code: '_.sortBy(arr, [function(a) { f(a) }])',
+        errors: [{message: 'Do not use _.sortBy without returning a value'}]
+    }, {
+        code: '_.sortBy(arr, [function(a) { f(a) }, function(b) { g(b) }])',
+        errors: [{message: 'Do not use _.sortBy without returning a value'}]
+    }, {
+        code: '_.sortBy(arr, a => a.x, function(a) { f(a) })',
+        errors: [{message: 'Do not use _.sortBy without returning a value'}]
+    }, {
+        code: '_.orderBy(arr, [function(a) { f(a) }], ["asc"])',
+        errors: [{message: 'Do not use _.orderBy without returning a value'}]
+    }, {
+        code: '_.overEvery([function(a) { f(a) }])',
+        errors: [{message: 'Do not use _.overEvery without returning a value'}]
     }].map(withDefaultPragma).concat([{
         code: 'import m from "lodash/map"; m(arr, x => {})',
         errors: [{message: 'Do not use _.map without returning a value'}],

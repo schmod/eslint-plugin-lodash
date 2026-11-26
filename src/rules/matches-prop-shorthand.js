@@ -29,6 +29,7 @@ module.exports = {
 
     create(context) {
         const {isCallToLodashMethod, getShorthandVisitors} = require('../util/lodashUtil')
+        const {getIterateeArrayType} = require('../util/methodDataUtil')
         const {isEqEqEqToMemberOf, getValueReturnedInFirstStatement, getFirstParamName} = require('../util/astUtil')
         const {version} = require('../util/settingsUtil').getSettings(context)
         const onlyLiterals = context.options[1] && context.options[1].onlyLiterals
@@ -37,7 +38,10 @@ module.exports = {
             return isEqEqEqToMemberOf(getValueReturnedInFirstStatement(func), getFirstParamName(func), {onlyLiterals})
         }
 
-        function canUseShorthand(iteratee, lodashContext) {
+        function canUseShorthand(iteratee, lodashContext, {node, method}) {
+            if (getIterateeArrayType(version, method) === 'rest' && iteratee.parent === node) {
+                return false
+            }
             return isFunctionDeclarationThatCanUseShorthand(iteratee) || isCallToLodashMethod(iteratee, 'matchesProperty', lodashContext)
         }
 
@@ -60,6 +64,6 @@ module.exports = {
         }, {
             always: 'Prefer matches property syntax',
             never: 'Do not use matches property syntax'
-        })
+        }, 'matchesProp')
     }
 }

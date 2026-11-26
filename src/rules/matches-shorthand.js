@@ -92,6 +92,6 @@ module.exports = {
         }, {
             always: 'Prefer matches syntax',
             never: 'Do not use matches syntax'
-        })
+        }, 'matches')
     }
 }
