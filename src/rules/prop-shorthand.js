@@ -38,7 +38,7 @@ module.exports = {
             if (!iteratee) {
                 return false
             }
-            if (iteratee.type === 'Literal') {
+            if (iteratee.type === 'Literal' && iteratee.value !== null && !iteratee.regex) {
                 return version !== 3 || iteratee.parent !== node || !methodSupportsShorthand(3, method, 'matchesProp') || !node.arguments[node.arguments.indexOf(iteratee) + 1]
             }
             return version === 4 && iteratee.parent !== node && !methodSupportsShorthand(4, method, 'matchesProp') && iteratee.type === 'ArrayExpression'

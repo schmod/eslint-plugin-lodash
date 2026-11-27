@@ -69,6 +69,12 @@ function getRawIterateeArgs(node, {method, version, callType}) {
     if (iterateeIndex === -1) {
         return []
     }
+    if (iterateeIndex === 'last') {
+        const totalArgs = node.arguments.length + (callType === 'chained' ? 1 : 0)
+        const lastArg = node.arguments[node.arguments.length - 1]
+        return totalArgs >= 2 && lastArg && lastArg.type !== 'ArrayExpression' && lastArg.type !== 'SpreadElement'
+            ? [lastArg] : []
+    }
     if (methodDataUtil.getIterateeArrayType(version, method) === 'rest') {
         return node.arguments.slice(Math.max(iterateeIndex - (callType === 'chained' ? 1 : 0), 0))
     }

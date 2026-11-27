@@ -41,6 +41,10 @@ ruleTester.run('prop-shorthand', rule, {
             options: ['never']
         },
         {
+            code: '_.orderBy(arr, null, ["desc"]);',
+            options: ['never']
+        },
+        {
             code: '_.find(arr, "a", 1);',
             options: ['never'],
             settings: {lodash: {version: 3}}
@@ -111,6 +115,17 @@ ruleTester.run('prop-shorthand', rule, {
         code: 'var fn = _.overEvery(["a", "b"]);',
         options: ['never'],
         errors: [{message: messages.never, column: 23}, {message: messages.never, column: 28}]
+    }, {
+        code: 'var res = _.differenceBy(a, b, i => i.id);',
+        errors: [{message: messages.always, column: 32}]
+    }, {
+        code: 'var res = _.differenceBy(a, b, "id");',
+        options: ['never'],
+        errors: [{message: messages.never, column: 32}]
+    }, {
+        code: 'var res = _.find(arr, "a", 2);',
+        options: ['never'],
+        errors: [{message: messages.never, column: 23}]
     }, {
         code: 'var ids = _.map(arr, "id");',
         options: ['never'],

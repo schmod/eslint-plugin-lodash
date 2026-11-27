@@ -33,7 +33,7 @@ const methodsThatSupportShorthand = _.flatMap([3, 4], version =>
 )
 
 const getExampleCodeWithShorthand = ({method, iterateeIndex}, inArray = false) => {
-    const prefix = ['arr', 'foo', 'bar'].slice(0, iterateeIndex)
+    const prefix = ['arr', 'foo', 'bar'].slice(0, iterateeIndex === 'last' ? 2 : iterateeIndex)
     const shorthand = inArray ? '[{b: {c: compId}}]' : '{b: {c: compId}}'
     return `_.${method}(${[...prefix, shorthand].join(', ')});`
 }
@@ -109,6 +109,14 @@ const invalidExamples = [
     {
         code: '_.overArgs(fn, [i => i.id === 3 && i.name === name]);',
         errors: [{message: messages.always, column: 17}]
+    },
+    {
+        code: '_.differenceBy(a, b, i => i.id === 3 && i.name === name);',
+        errors: [{message: messages.always, column: 22}]
+    },
+    {
+        code: '_.keyBy(arr, i => i.id === 3 && i.name === name);',
+        errors: [{message: messages.always, column: 14}]
     }
 ].map(withDefaultPragma)
 
@@ -127,21 +135,20 @@ const map = _.flatMap(methodsThatSupportShorthand, spec => {
 
 ruleTester.run('matches-shorthand', rule, {
     valid: [
-        // 'var isPublic = _.find([], function (i) { return x.id; });',
-        // 'var r = _.findIndex(this.packages, {name: name});',
-        // 'var isPublic = _.map([], function (i) { return i.id + "?"; });',
-        // 'lang.fonts = _.filter(lang.fonts, function (font) { return font.permissions !== "legacy"});',
-        // 'var isPublic = _.findLastIndex([], function (i) { return i.id == 3 && f(i); });',
-        // {
-        //     code: 'var isPublic = _.find([], function(i) { return i.id === 3});',
-        //     options: ['never']
-        // }, {
-        //     code: 'var b = 1; var isPublic = _.find([], function(i) { return i.id === 3 && i.a === b; });',
-        //     options: ['always', 1, true, {onlyLiterals: true}]
-        // }
+        'var isPublic = _.find([], function (i) { return x.id; });',
+        'var r = _.findIndex(this.packages, {name: name});',
+        'var isPublic = _.map([], function (i) { return i.id + "?"; });',
+        'lang.fonts = _.filter(lang.fonts, function (font) { return font.permissions !== "legacy"});',
+        'var isPublic = _.findLastIndex([], function (i) { return i.id == 3 && f(i); });',
+        {
+            code: 'var b = 1; var isPublic = _.find([], function(i) { return i.id === 3 && i.a === b; });',
+            options: ['always', 1, true, {onlyLiterals: true}]
+        },
         ...[
+            'var isPublic = _.find([], function(i) { return i.id === 3});',
             '_.orderBy(arr, ["name", "age"], ["asc", "desc"]);',
-            '_.sortBy(arr, ["name", "age"]);'
+            '_.sortBy(arr, ["name", "age"]);',
+            '_.differenceBy(a, [1, 2]);'
         ].map(fromOptions({options: ['never']}))
     ].map(withDefaultPragma),
     invalid: [

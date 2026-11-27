@@ -39,5 +39,8 @@ ruleTester.run('no-unbound-this', rule, {
     }, {
         code: 'var y = _.orderBy(x, [function (t) {return this.f(t)}], ["asc"])',
         errors: [{message}]
+    }, {
+        code: 'var y = _.differenceBy(a, b, function (t) {return this.f(t)})',
+        errors: [{message}]
     }].map(withDefaultPragma)
 })

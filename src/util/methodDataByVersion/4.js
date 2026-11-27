@@ -334,9 +334,10 @@ module.exports = {
     differenceBy: {
         aliases: [],
         wrapper: false,
-        shorthand: true,
+        shorthand: {matchesProp: false, identity: false},
         chainable: true,
-        iteratee: true
+        iteratee: true,
+        iterateeIndex: 'last'
     },
     differenceWith: {
         aliases: [],
@@ -758,9 +759,10 @@ module.exports = {
     intersectionBy: {
         aliases: [],
         wrapper: false,
-        shorthand: true,
+        shorthand: {matchesProp: false, identity: false},
         chainable: true,
-        iteratee: true
+        iteratee: true,
+        iterateeIndex: 'last'
     },
     intersectionWith: {
         aliases: [],
@@ -1121,7 +1123,7 @@ module.exports = {
     keyBy: {
         aliases: [],
         wrapper: false,
-        shorthand: false,
+        shorthand: true,
         chainable: true,
         iteratee: true,
         args: 2
@@ -1201,7 +1203,7 @@ module.exports = {
     mapKeys: {
         aliases: [],
         wrapper: false,
-        shorthand: false,
+        shorthand: true,
         chainable: true,
         iteratee: true,
         args: 2
@@ -1257,7 +1259,7 @@ module.exports = {
     meanBy: {
         aliases: [],
         wrapper: false,
-        shorthand: false,
+        shorthand: true,
         chainable: false,
         iteratee: true,
         args: 2
@@ -2228,9 +2230,10 @@ module.exports = {
     unionBy: {
         aliases: [],
         wrapper: false,
-        shorthand: true,
+        shorthand: {matchesProp: false, identity: false},
         chainable: true,
-        iteratee: true
+        iteratee: true,
+        iterateeIndex: 'last'
     },
     unionWith: {
         aliases: [],
@@ -2391,9 +2394,10 @@ module.exports = {
     xorBy: {
         aliases: [],
         wrapper: false,
-        shorthand: true,
+        shorthand: {matchesProp: false, identity: false},
         chainable: true,
-        iteratee: true
+        iteratee: true,
+        iterateeIndex: 'last'
     },
     xorWith: {
         aliases: [],

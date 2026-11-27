@@ -26,7 +26,8 @@ ruleTester.run('collection-return', rule, {
         {code: '_.map(x, async t => {})', languageOptions: {parserOptions: {ecmaVersion: 8}}},
         {code: '_.map(x, function*(t) {})', languageOptions: {parserOptions: {ecmaVersion: 6}}},
         '_.sortBy(arr, [function(a) { return a.x }])',
-        '_.orderBy(arr, [function(a) { return a.x }], ["asc"])'
+        '_.orderBy(arr, [function(a) { return a.x }], ["asc"])',
+        '_.differenceBy(a, b, function(x) { return x.id })'
     ].map(withDefaultPragma),
     invalid: [{
         code: '_.map(arr, function(a) {console.log(a)})',
@@ -59,6 +60,9 @@ ruleTester.run('collection-return', rule, {
     }, {
         code: '_.overEvery([function(a) { f(a) }])',
         errors: [{message: 'Do not use _.overEvery without returning a value'}]
+    }, {
+        code: '_.differenceBy(a, b, function(x) { f(x) })',
+        errors: [{message: 'Do not use _.differenceBy without returning a value'}]
     }].map(withDefaultPragma).concat([{
         code: 'import m from "lodash/map"; m(arr, x => {})',
         errors: [{message: 'Do not use _.map without returning a value'}],

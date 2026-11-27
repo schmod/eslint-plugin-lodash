@@ -60,7 +60,12 @@ ruleTester.run('identity-shorthand', rule, {
         'var x = _.sortBy(arr, x => x, "a")',
         'var x = _.sortBy(arr, ...rest, x => x)',
         'var x = _.orderBy(arr, [x => x, "a"], ["asc", "desc"])',
-        'var x = _.orderBy(arr, x => x, "desc")'
+        'var x = _.orderBy(arr, x => x, "desc")',
+        'var x = _.find(arr, x => x, 2)',
+        {
+            code: 'var x = _.differenceBy(a, b)',
+            options: ['never']
+        }
     ].map(withDefaultPragma),
     invalid: [{
         code: 'var ids = _.map([], function (i) { return i; });',
